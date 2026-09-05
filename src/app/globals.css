@@ -1,26 +1,344 @@
 @import "tailwindcss";
 
+/* `dark:` yardımcılarını etkisiz kılar — bu tasarım tek temaya bağlıdır.
+   (Değişken kaldırılırsa Tailwind prefers-color-scheme'e düşer.) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ */
+/*  KAĞIT / MÜREKKEP / TEK ÇİĞ RENK                                    */
+/* ------------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --paper: #f9f9f9;
+  --paper-2: #f2f2f0;
+  --paper-3: #ebebe8;
+  --card: #ffffff;
+
+  --ink: #111111;
+  --ink-70: #3d3d3d;
+  --ink-60: #5a5a5a;
+  --ink-40: #8c8c8c;
+  --ink-20: #bdbdbd;
+
+  --rule: #e2e2df;
+  --rule-mid: #d2d2ce;
+
+  /* Tek çiğ renk — yalnızca entegrasyon noktaları, akış ve etkileşim */
+  --accent: #ff3d00;
+  --accent-ink: #cc3100;
+
+  --conn: 4rem;
+  --header-height: 4rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Yeni semantik isimler */
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-70: var(--ink-70);
+  --color-ink-60: var(--ink-60);
+  --color-ink-40: var(--ink-40);
+  --color-ink-20: var(--ink-20);
+  --color-rule: var(--rule);
+  --color-rule-mid: var(--rule-mid);
+  --color-accent: var(--accent);
+
+  /* Eski token isimleri yeni palete bağlandı (iç sayfalar bozulmasın) */
+  --color-bg: var(--paper);
+  --color-bg-subtle: var(--paper-2);
+  --color-bg-muted: var(--paper-3);
+  --color-surface: var(--card);
+  --color-surface-raised: var(--card);
+  --color-border-base: var(--rule);
+  --color-border-strong: var(--ink);
+
+  --color-fg: var(--ink);
+  --color-fg-muted: var(--ink-60);
+  --color-fg-subtle: var(--ink-40);
+
+  --color-brand-50: #fff1ec;
+  --color-brand-100: #ffe2d8;
+  --color-brand-200: #ffc4b0;
+  --color-brand-300: #ff9a76;
+  --color-brand-400: #ff6a37;
+  --color-brand-500: var(--accent);
+  --color-brand-600: var(--accent);
+  --color-brand-700: var(--accent-ink);
+  --color-brand-800: var(--accent-ink);
+  --color-brand-900: var(--ink);
+
+  --color-accent-400: #ff6a37;
+  --color-accent-500: var(--accent);
+  --color-accent-600: var(--accent-ink);
+
+  --color-teal-400: var(--ink-60);
+  --color-teal-500: var(--ink);
+
+  --color-success: var(--ink);
+  --color-warning: var(--accent);
+  --color-danger: var(--accent-ink);
+
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --animate-ticker: ticker 42s linear infinite;
+  --animate-flow-x: flow-x 2.4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  --animate-flow-x-rev: flow-x-rev 3s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  --animate-flow-y: flow-y 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  --animate-blink: blink 1.6s steps(1, end) infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes flow-x {
+  0%   { transform: translateX(0);   opacity: 0; }
+  14%  { opacity: 1; }
+  86%  { opacity: 1; }
+  100% { transform: translateX(calc(var(--conn) - 0.75rem)); opacity: 0; }
+}
+@keyframes flow-x-rev {
+  0%   { left: calc(100% - 0.75rem); opacity: 0; }
+  14%  { opacity: 1; }
+  86%  { opacity: 1; }
+  100% { left: 0; opacity: 0; }
+}
+@keyframes flow-y {
+  0%   { transform: translateY(0);    opacity: 0; }
+  14%  { opacity: 1; }
+  86%  { opacity: 1; }
+  100% { transform: translateY(2.25rem); opacity: 0; }
+}
+@keyframes blink {
+  0%, 55%  { opacity: 1; }
+  56%, 100% { opacity: 0.15; }
+}
+
+/* ------------------------------------------------------------------ */
+/*  TASARIM YASALARI                                                    */
+/*  1) Yuvarlatılmış köşe yok.  2) Yumuşak SaaS gölgesi yok.            */
+/*  Bu iki kural bilinçlidir; ileride bir bileşen eklerken de geçerlidir.*/
+/* ------------------------------------------------------------------ */
+[class*="rounded"] { border-radius: 0 !important; }
+[class*="shadow-["], [class*="drop-shadow"] { box-shadow: none !important; filter: none !important; }
+
+@layer base {
+  * { border-color: var(--rule); }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-height) + 2rem);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  ::selection { background: var(--accent); color: #fff; }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: var(--paper); border-left: 1px solid var(--rule); }
+  ::-webkit-scrollbar-thumb { background: var(--ink-20); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink); }
+}
+
+@layer components {
+  /* Sayfanın tek hizalama kabı — teknik ızgara da buna oturur */
+  .shell {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 88rem;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 640px) { .shell { padding-inline: 2rem; } }
+  @media (min-width: 1024px) { .shell { padding-inline: 3rem; } }
+
+  /* Mono teknik etiket */
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.4;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility text-stroke {
+  -webkit-text-stroke: 1px var(--rule-mid);
+  color: transparent;
+}
+
+@utility mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+/* İç sayfalardaki gradyan metin artık düz çiğ renk */
+@utility text-gradient {
+  color: var(--accent);
+  background-image: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+@utility surface-card {
+  background-color: var(--card);
+  border: 1px solid var(--rule);
+}
+
+@utility glass {
+  background-color: var(--paper);
+}
+
+@utility grid-bg { background-image: none; }
+@utility dot-bg { background-image: none; }
+
+@utility mask-fade-y {
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Görünüme giriş — editöryel, satır satır yükselme                    */
+/* ------------------------------------------------------------------ */
+html:not(.js) .reveal,
+html:not(.js) .reveal-lines .line > span {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* Başlıklarda kullanılır: .reveal.reveal-lines > .line > span */
+.reveal-lines { opacity: 1; transform: none; }
+.reveal-lines .line {
+  display: block;
+  overflow: hidden;
+  /* Türkçe aksanlar (İ, Ğ, Ü) sıkı satır yüksekliğinde taşar; kırpılmasın */
+  padding-top: 0.18em;
+  margin-top: -0.18em;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+.reveal-lines .line > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal-lines.is-visible .line > span { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-lines .line > span { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Uzun metin (kılavuz / hukuki sayfalar)                              */
+/* ------------------------------------------------------------------ */
+.prose-editex { color: var(--ink-60); line-height: 1.75; }
+.prose-editex h2 {
+  color: var(--ink);
+  font-size: 1.375rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  margin-top: 3rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--ink);
+  scroll-margin-top: calc(var(--header-height) + 2rem);
+}
+.prose-editex h3 {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.prose-editex p { margin-bottom: 1rem; }
+.prose-editex ul, .prose-editex ol { margin: 0 0 1.25rem 0; padding-left: 0; }
+.prose-editex li { margin-bottom: 0.5rem; }
+.prose-editex ul > li {
+  list-style: none;
+  position: relative;
+  padding-left: 1.25rem;
+}
+.prose-editex ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+}
+.prose-editex ol { list-style: none; counter-reset: step; }
+.prose-editex ol > li {
+  position: relative;
+  padding-left: 2rem;
+  counter-increment: step;
+}
+.prose-editex ol > li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+}
+.prose-editex strong { color: var(--ink); font-weight: 700; }
+.prose-editex a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+.prose-editex code {
+  font-family: var(--font-mono);
+  font-size: 0.8125em;
+  background: var(--paper-3);
+  border: 1px solid var(--rule);
+  padding: 0.1rem 0.35rem;
+  color: var(--ink);
 }
